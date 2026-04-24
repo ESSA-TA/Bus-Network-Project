@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bus Network — Premium Transit Booking">
+    <title>{% block title %}Bus Network{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'routes/styles.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- ═══════════════════════════════════════════════════════
+         NAVBAR
+    ═══════════════════════════════════════════════════════ -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="navbar__inner">
+
+            <!-- Brand -->
+            <a href="{% url 'index' %}" class="navbar__brand" aria-label="Bus Network Home">
+                <div class="navbar__brand-icon" aria-hidden="true">🚌</div>
+                <div class="navbar__brand-text">
+                    <span class="navbar__brand-name">Bus Network</span>
+                    <span class="navbar__brand-tagline">Premium Transit</span>
+                </div>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <ul class="navbar__nav" role="list">
+                <li>
+                    <a href="{% url 'index' %}"
+                       class="navbar__link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                        Routes
+                    </a>
+                </li>
+                {% if user.is_authenticated %}
+                <li>
+                    <a href="{% url 'my_bookings' %}"
+                       class="navbar__link {% if request.resolver_match.url_name == 'my_bookings' %}active{% endif %}">
+                        My Bookings
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+
+            <!-- Auth Actions -->
+            <div class="navbar__actions">
+                {% if user.is_authenticated %}
+                    <span class="navbar__link" style="pointer-events:none; opacity:0.6;">
+                        👤 {{ user.username|title }}
+                    </span>
+                    <!-- ✅ FIX: POST form instead of <a> tag — Django 4.1+ requires POST for logout -->
+                    <form method="post" action="{% url 'logout' %}" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="navbar__btn navbar__btn--ghost">
+                            Logout
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}"
+                       class="navbar__btn navbar__btn--ghost {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+                        Login
+                    </a>
+                    <a href="{% url 'register' %}"
+                       class="navbar__btn navbar__btn--primary {% if request.resolver_match.url_name == 'register' %}active{% endif %}">
+                        Get Started
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Hamburger -->
+            <button class="navbar__toggle"
+                    aria-label="Toggle navigation"
+                    aria-expanded="false"
+                    aria-controls="mobile-menu"
+                    onclick="toggleMobileMenu(this)">
+                <span class="navbar__toggle-bar"></span>
+                <span class="navbar__toggle-bar"></span>
+                <span class="navbar__toggle-bar"></span>
+            </button>
+
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="navbar__mobile-menu" role="menu" aria-hidden="true">
+        <a href="{% url 'index' %}" class="navbar__link">🗺 Routes</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'my_bookings' %}" class="navbar__link">🎫 My Bookings</a>
+            <hr style="border:none; border-top:1px solid rgba(255,255,255,0.08); margin:8px 0;">
+            <!-- ✅ FIX: POST form instead of <a> tag -->
+            <form method="post" action="{% url 'logout' %}" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" class="navbar__btn navbar__btn--ghost"
+                        style="width:100%; justify-content:center;">
+                    Logout
+                </button>
+            </form>
+        {% else %}
+            <hr style="border:none; border-top:1px solid rgba(255,255,255,0.08); margin:8px 0;">
+            <a href="{% url 'login' %}"    class="navbar__btn navbar__btn--ghost"
+               style="width:100%; justify-content:center;">Login</a>
+            <a href="{% url 'register' %}" class="navbar__btn navbar__btn--primary"
+               style="width:100%; justify-content:center;">Get Started</a>
+        {% endif %}
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         FLASH MESSAGES
+    ═══════════════════════════════════════════════════════ -->
+    {% if messages %}
+    <div class="messages-container"
+         style="position:fixed; top:calc(var(--nav-height) + 16px); right:16px; z-index:2000;
+                display:flex; flex-direction:column; gap:10px; max-width:380px; width:calc(100% - 32px);">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}"
+             role="alert"
+             style="animation: fadeInUp 0.3s ease both;">
+            <span class="alert-icon" aria-hidden="true">
+                {% if message.tags == 'success' %}✅
+                {% elif message.tags == 'error' %}❌
+                {% elif message.tags == 'warning' %}⚠️
+                {% else %}ℹ️{% endif %}
+            </span>
+            <div class="alert-content">{{ message }}</div>
+            <button onclick="this.parentElement.remove()"
+                    aria-label="Dismiss"
+                    style="background:none; border:none; cursor:pointer; color:inherit;
+                           opacity:0.55; font-size:14px; margin-left:auto; padding:0 0 0 8px;">✕</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ═══════════════════════════════════════════════════════
+         MAIN CONTENT
+    ═══════════════════════════════════════════════════════ -->
+    <main class="page-wrapper" id="main-content">
+        <div class="container" style="padding-block: var(--space-8);">
+            {% block body %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════
+         FOOTER
+    ═══════════════════════════════════════════════════════ -->
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <div class="footer__grid">
+                <div>
+                    <a href="{% url 'index' %}" class="navbar__brand" style="margin-bottom: var(--space-4);">
+                        <div class="navbar__brand-icon" aria-hidden="true">🚌</div>
+                        <div class="navbar__brand-text">
+                            <span class="navbar__brand-name">Bus Network</span>
+                            <span class="navbar__brand-tagline">Premium Transit</span>
+                        </div>
+                    </a>
+                    <p class="footer__brand-desc">
+                        Reliable, modern transit booking for everyone. Book your seat in seconds.
+                    </p>
+                </div>
+                <div>
+                    <p class="footer__col-title">Navigation</p>
+                    <a href="{% url 'index' %}" class="footer__link">All Routes</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'my_bookings' %}" class="footer__link">My Bookings</a>
+                    {% else %}
+                        <a href="{% url 'login' %}"    class="footer__link">Login</a>
+                        <a href="{% url 'register' %}" class="footer__link">Register</a>
+                    {% endif %}
+                </div>
+                <div>
+                    <p class="footer__col-title">Support</p>
+                    <a href="#" class="footer__link">Help Center</a>
+                    <a href="#" class="footer__link">Contact Us</a>
+                </div>
+            </div>
+            <div class="footer__bottom">
+                <p class="footer__copyright">© {% now "Y" %} Bus Network. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    /* ── Mobile menu toggle ─────────────────────────────── */
+    function toggleMobileMenu(btn) {
+        const menu   = document.getElementById('mobile-menu');
+        const isOpen = menu.classList.toggle('open');
+        btn.setAttribute('aria-expanded', isOpen);
+        menu.setAttribute('aria-hidden', !isOpen);
+
+        const bars = btn.querySelectorAll('.navbar__toggle-bar');
+        if (isOpen) {
+            bars[0].style.transform = 'translateY(7px) rotate(45deg)';
+            bars[1].style.opacity   = '0';
+            bars[2].style.transform = 'translateY(-7px) rotate(-45deg)';
+        } else {
+            bars.forEach(b => { b.style.transform = ''; b.style.opacity = ''; });
+        }
+    }
+
+    /* ── Auto-dismiss flash messages after 4 s ──────────── */
+    document.querySelectorAll('.messages-container .alert').forEach((el, i) => {
+        setTimeout(() => {
+            el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+            el.style.opacity    = '0';
+            el.style.transform  = 'translateX(16px)';
+            setTimeout(() => el.remove(), 400);
+        }, 4000 + i * 300);
+    });
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

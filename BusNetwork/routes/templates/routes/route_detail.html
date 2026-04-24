@@ -1,0 +1,193 @@
+{% extends "routes/layout.html" %}
+
+{% block title %}Route #{{ route.id }} — Bus Network{% endblock %}
+
+{% block body %}
+
+<div class="page-header">
+    <div class="page-header__content">
+        <p class="page-header__eyebrow">Route Information</p>
+        <h1 class="page-header__title">Route #{{ route.id }}</h1>
+
+        <div class="flex items-center flex-wrap gap-3" style="margin-top:var(--space-4);">
+            <a href="{% url 'station_detail' route.origin.id %}" class="badge badge-primary" style="padding:8px 14px; font-size:var(--text-sm); text-decoration:none; transition:0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                📍 {{ route.origin.city }}
+            </a>
+            <span aria-hidden="true" style="color:var(--color-text-muted); font-size:1.2rem; line-height:1;">→</span>
+            <a href="{% url 'station_detail' route.destination.id %}" class="badge badge-success" style="padding:8px 14px; font-size:var(--text-sm); text-decoration:none; transition:0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                🏁 {{ route.destination.city }}
+            </a>
+            <span class="badge badge-neutral" style="padding:8px 14px; font-size:var(--text-sm);">
+                ⏱ {{ route.duration }} min
+            </span>
+            <span class="badge badge-neutral" style="padding:8px 14px; font-size:var(--text-sm);">
+                👥 {{ passengers|length }} passenger{{ passengers|length|pluralize }}
+            </span>
+        </div>
+    </div>
+
+    <div class="page-header__actions">
+        <a href="{% url 'index' %}" class="btn btn-secondary">
+            ← All Routes
+        </a>
+    </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr auto; gap:var(--space-6); align-items:start; max-width:900px;">
+
+    <div class="card" style="min-width:0;">
+        <div class="card__header">
+            <h3 class="font-bold text-lg">Passenger List</h3>
+            {% if passengers %}
+            <span class="badge badge-primary">{{ passengers|length }} booked</span>
+            {% endif %}
+        </div>
+
+        <div class="card__body" style="padding:0;">
+            <div class="table-wrapper" style="border:none; box-shadow:none; border-radius:0;" role="region" aria-label="Passenger list">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Passenger Name</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for passenger in passengers %}
+                        <tr {% if passenger.username == user.username %}style="background:var(--color-primary-subtle);"{% endif %}>
+                            <td class="text-muted text-sm">{{ forloop.counter }}</td>
+                            <td class="font-medium">
+                                {{ passenger.username|title }}
+                                {% if passenger.username == user.username %}
+                                <span class="badge badge-primary" style="margin-left:var(--space-2);">You</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="badge badge-success">✓ Booked</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted" style="padding:var(--space-12);">
+                                <div style="display:flex; flex-direction:column; align-items:center; gap:var(--space-3);">
+                                    <span aria-hidden="true" style="font-size:2rem;">🎫</span>
+                                    <span>No passengers yet — be the first to book!</span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card__footer justify-end">
+            {% if user.is_authenticated %}
+                {% if is_booked %}
+                    <form action="{% url 'book' route.id %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="unbook">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Cancel your booking on this route?')">
+                            ✕ Cancel Booking
+                        </button>
+                    </form>
+                {% else %}
+                    <form action="{% url 'book' route.id %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="book">
+                        <button type="submit" class="btn btn-primary">
+                            🎫 Confirm Booking
+                        </button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <p class="text-sm text-muted">
+                    Please <a href="{% url 'login' %}" style="color:var(--color-primary); font-weight:700;">Login</a> to book this route.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-4); min-width:220px;">
+
+        <div class="card">
+            <div class="card__header">
+                <h4 class="font-bold text-base">Summary</h4>
+            </div>
+            <div class="card__body" style="display:flex; flex-direction:column; gap:var(--space-4);">
+                <div>
+                    <p class="text-xs font-semibold" style="letter-spacing:.08em; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:4px;">
+                        Origin
+                    </p>
+                    <div style="margin-left: -6px;">
+                        <a href="{% url 'station_detail' route.origin.id %}" style="display: inline-flex; align-items: center; gap: 4px; color: var(--color-primary); text-decoration: none; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 1rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='rgba(59, 130, 246, 0.1)'" onmouseout="this.style.backgroundColor='transparent'" title="View {{ route.origin.city }} station details">
+                            {{ route.origin.city }} 
+                            <span style="font-size: 14px;">↗</span>
+                        </a>
+                    </div>
+                </div>
+                <div style="height:1px; background:var(--color-border); margin: 10px 0;"></div>
+                <div>
+                    <p class="text-xs font-semibold" style="letter-spacing:.08em; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:4px;">
+                        Destination
+                    </p>
+                    <div style="margin-left: -6px;">
+                        <a href="{% url 'station_detail' route.destination.id %}" style="display: inline-flex; align-items: center; gap: 4px; color: var(--color-primary); text-decoration: none; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 1rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='rgba(59, 130, 246, 0.1)'" onmouseout="this.style.backgroundColor='transparent'" title="View {{ route.destination.city }} station details">
+                            {{ route.destination.city }} 
+                            <span style="font-size: 14px;">↗</span>
+                        </a>
+                    </div>
+                </div>
+                <div style="height:1px; background:var(--color-border); margin: 10px 0;"></div>
+                <div>
+                    <p class="text-xs font-semibold" style="letter-spacing:.08em; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:4px;">
+                        Est. Duration
+                    </p>
+                    <p class="font-bold text-base">{{ route.duration }} minutes</p>
+                </div>
+                <div style="height:1px; background:var(--color-border); margin: 10px 0;"></div>
+                <div>
+                    <p class="text-xs font-semibold" style="letter-spacing:.08em; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:4px;">
+                        Passengers
+                    </p>
+                    <p class="font-bold text-base">{{ passengers|length }}</p>
+                </div>
+            </div>
+        </div>
+
+        {% if user.is_authenticated %}
+        <div class="card" style="border-color:{% if is_booked %}rgba(16,185,129,.25){% else %}var(--color-border){% endif %}; background:{% if is_booked %}rgba(16,185,129,.04){% else %}''{% endif %};">
+            <div class="card__body" style="text-align:center; padding:var(--space-5);">
+                <div style="font-size:1.75rem; margin-bottom:var(--space-2);">
+                    {% if is_booked %}✅{% else %}🎫{% endif %}
+                </div>
+                <p class="font-semibold text-sm">Your Status</p>
+                <p class="text-sm" style="margin-top:4px; color:{% if is_booked %}var(--color-success){% else %}var(--color-text-muted){% endif %};">
+                    {% if is_booked %}Seat Confirmed{% else %}Not Booked{% endif %}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    const grid = document.querySelector('[style*="grid-template-columns:1fr auto"]');
+    if (!grid) return;
+    function applyLayout() {
+        if (window.innerWidth < 768) {
+            grid.style.gridTemplateColumns = '1fr';
+        } else {
+            grid.style.gridTemplateColumns = '1fr auto';
+        }
+    }
+    applyLayout();
+    window.addEventListener('resize', applyLayout, { passive: true });
+})();
+</script>
+{% endblock %}

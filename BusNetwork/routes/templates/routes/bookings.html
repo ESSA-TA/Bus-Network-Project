@@ -1,0 +1,61 @@
+{% extends "routes/layout.html" %}
+
+{% block title %}My Bookings — Bus Network{% endblock %}
+
+{% block body %}
+
+<div class="page-header">
+    <div class="page-header__content">
+        <p class="page-header__eyebrow">Your Account</p>
+        <h1 class="page-header__title">My Bookings</h1>
+        <p class="page-header__description">All routes you have booked.</p>
+    </div>
+    <div class="page-header__actions">
+        <a href="{% url 'index' %}" class="btn btn-primary">+ Book New Route</a>
+    </div>
+</div>
+
+{% if routes %}
+<div class="route-grid">
+    {% for route in routes %}
+    <a href="{% url 'route_detail' route.id %}"
+       style="text-decoration:none; color:inherit; display:block;">
+        <div class="route-card">
+            <div class="route-card__stripe route-card__stripe--accent"></div>
+            <div class="route-card__content">
+                <div class="route-card__number">{{ route.id }}</div>
+                <div class="route-card__route">
+                    <div class="route-card__stop">
+                        <div class="route-card__stop-label">From</div>
+                        <div class="route-card__stop-name">{{ route.origin.city }}</div>
+                    </div>
+                    <span class="route-card__arrow" aria-hidden="true">→</span>
+                    <div class="route-card__stop">
+                        <div class="route-card__stop-label">To</div>
+                        <div class="route-card__stop-name">{{ route.destination.city }}</div>
+                    </div>
+                </div>
+                <div class="route-card__meta">
+                    <div class="route-card__stat">
+                        <div class="route-card__stat-label">Duration</div>
+                        <div class="route-card__stat-value">{{ route.duration }} min</div>
+                    </div>
+                    <div class="route-card__stat" style="margin-left:auto;">
+                        <span class="badge badge-success">✓ Booked</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state__icon">🎫</div>
+    <h3 class="empty-state__title">No bookings yet</h3>
+    <p class="empty-state__description">You haven't booked any routes. Browse available routes and book your seat.</p>
+    <a href="{% url 'index' %}" class="btn btn-primary btn-lg">Browse Routes</a>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "routes/layout.html" %}
+
+{% block title %}Create Account — Bus Network{% endblock %}
+
+{% block body %}
+
+<div style="display:flex; align-items:center; justify-content:center;
+            min-height:calc(100vh - var(--nav-height) - 64px);">
+
+    <div class="form-card glass-container" style="width:100%; max-width:440px; margin-top:var(--space-6);">
+
+        <div class="form-header">
+            <div class="form-header__icon" aria-hidden="true">✨</div>
+            <h2>Create Account</h2>
+            <p>Join Bus Network today — it's free</p>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger" role="alert" style="margin-bottom:var(--space-5);">
+            <span class="alert-icon" aria-hidden="true">❌</span>
+            <div class="alert-content">{{ form.non_field_errors.0 }}</div>
+        </div>
+        {% endif %}
+
+        <form action="{% url 'register' %}" method="post" novalidate>
+            {% csrf_token %}
+
+            {# Username #}
+            <div class="form-group">
+                <div class="input-float">
+                    {{ form.username }}
+                    <div class="input-float__bar" aria-hidden="true"></div>
+                    <label class="input-float__label" for="{{ form.username.id_for_label }}">
+                        Username
+                    </label>
+                </div>
+                {% if form.username.errors %}
+                <span class="input-helper input-error" role="alert">
+                    {{ form.username.errors.0 }}
+                </span>
+                {% endif %}
+            </div>
+
+            {# Password #}
+            <div class="form-group">
+                <div class="input-float">
+                    {{ form.password1 }}
+                    <div class="input-float__bar" aria-hidden="true"></div>
+                    <label class="input-float__label" for="{{ form.password1.id_for_label }}">
+                        Password
+                    </label>
+                </div>
+                {% if form.password1.errors %}
+                <span class="input-helper input-error" role="alert">
+                    {{ form.password1.errors.0 }}
+                </span>
+                {% endif %}
+            </div>
+
+            {# Confirm Password #}
+            <div class="form-group">
+                <div class="input-float">
+                    {{ form.password2 }}
+                    <div class="input-float__bar" aria-hidden="true"></div>
+                    <label class="input-float__label" for="{{ form.password2.id_for_label }}">
+                        Confirm Password
+                    </label>
+                </div>
+                {% if form.password2.errors %}
+                <span class="input-helper input-error" role="alert">
+                    {{ form.password2.errors.0 }}
+                </span>
+                {% endif %}
+            </div>
+
+            <p class="input-helper" style="margin-top:calc(var(--space-2) * -1); margin-bottom:var(--space-5);">
+                Minimum 8 characters. Must not be entirely numeric.
+            </p>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg">
+                Create Account
+            </button>
+        </form>
+
+        <div class="form-divider">or</div>
+
+        <div class="form-footer">
+            Already have an account? <a href="{% url 'login' %}">Login here</a>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

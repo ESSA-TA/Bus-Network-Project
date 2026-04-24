@@ -1,0 +1,138 @@
+{% extends "routes/layout.html" %}
+
+{% block title %}{{ station.city }} Station — Bus Network{% endblock %}
+
+{% block body %}
+
+{# ── Page Header ──────────────────────────────────────────── #}
+<div class="page-header">
+    <div class="page-header__content">
+        <p class="page-header__eyebrow">Station Information</p>
+        <h1 class="page-header__title">📍 {{ station.city }}</h1>
+        <div class="flex items-center flex-wrap gap-3" style="margin-top:var(--space-4);">
+            <span class="badge badge-primary" style="padding:8px 14px; font-size:var(--text-sm);">
+                🛫 {{ departing.count }} Departing
+            </span>
+            <span class="badge badge-success" style="padding:8px 14px; font-size:var(--text-sm);">
+                🛬 {{ arriving.count }} Arriving
+            </span>
+        </div>
+    </div>
+    <div class="page-header__actions">
+        <a href="{% url 'index' %}" class="btn btn-secondary">← All Routes</a>
+    </div>
+</div>
+
+{# ── Departing Routes ─────────────────────────────────────── #}
+<div style="margin-bottom: var(--space-10);">
+    <div style="display:flex; align-items:center; gap:var(--space-3); margin-bottom:var(--space-6);">
+        <div style="width:4px; height:28px; background:var(--gradient-primary);
+                    border-radius:var(--radius-full);"></div>
+        <h2 style="font-size:var(--text-xl); font-weight:700; margin:0;">
+            Departing from {{ station.city }}
+        </h2>
+    </div>
+
+    {% if departing %}
+    <div class="route-grid">
+        {% for route in departing %}
+        <a href="{% url 'route_detail' route.id %}"
+           style="text-decoration:none; color:inherit; display:block;">
+            <div class="route-card">
+                <div class="route-card__stripe"></div>
+                <div class="route-card__content">
+                    <div class="route-card__number">{{ route.id }}</div>
+                    <div class="route-card__route">
+                        <div class="route-card__stop">
+                            <div class="route-card__stop-label">From</div>
+                            <div class="route-card__stop-name">{{ route.origin.city }}</div>
+                        </div>
+                        <span class="route-card__arrow">→</span>
+                        <div class="route-card__stop">
+                            <div class="route-card__stop-label">To</div>
+                            <div class="route-card__stop-name">{{ route.destination.city }}</div>
+                        </div>
+                    </div>
+                    <div class="route-card__meta">
+                        <div class="route-card__stat">
+                            <div class="route-card__stat-label">Duration</div>
+                            <div class="route-card__stat-value">{{ route.duration }} min</div>
+                        </div>
+                        <div class="route-card__stat" style="margin-left:auto;">
+                            <span class="badge badge-primary">Departing</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card__body" style="text-align:center; padding:var(--space-12);">
+            <span style="font-size:2rem;">🚌</span>
+            <p style="margin-top:var(--space-3); color:var(--color-text-muted);">
+                No routes depart from {{ station.city }}.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{# ── Arriving Routes ──────────────────────────────────────── #}
+<div>
+    <div style="display:flex; align-items:center; gap:var(--space-3); margin-bottom:var(--space-6);">
+        <div style="width:4px; height:28px; background:var(--gradient-accent);
+                    border-radius:var(--radius-full);"></div>
+        <h2 style="font-size:var(--text-xl); font-weight:700; margin:0;">
+            Arriving at {{ station.city }}
+        </h2>
+    </div>
+
+    {% if arriving %}
+    <div class="route-grid">
+        {% for route in arriving %}
+        <a href="{% url 'route_detail' route.id %}"
+           style="text-decoration:none; color:inherit; display:block;">
+            <div class="route-card">
+                <div class="route-card__stripe route-card__stripe--accent"></div>
+                <div class="route-card__content">
+                    <div class="route-card__number">{{ route.id }}</div>
+                    <div class="route-card__route">
+                        <div class="route-card__stop">
+                            <div class="route-card__stop-label">From</div>
+                            <div class="route-card__stop-name">{{ route.origin.city }}</div>
+                        </div>
+                        <span class="route-card__arrow">→</span>
+                        <div class="route-card__stop">
+                            <div class="route-card__stop-label">To</div>
+                            <div class="route-card__stop-name">{{ route.destination.city }}</div>
+                        </div>
+                    </div>
+                    <div class="route-card__meta">
+                        <div class="route-card__stat">
+                            <div class="route-card__stat-label">Duration</div>
+                            <div class="route-card__stat-value">{{ route.duration }} min</div>
+                        </div>
+                        <div class="route-card__stat" style="margin-left:auto;">
+                            <span class="badge badge-success">Arriving</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card__body" style="text-align:center; padding:var(--space-12);">
+            <span style="font-size:2rem;">🏁</span>
+            <p style="margin-top:var(--space-3); color:var(--color-text-muted);">
+                No routes arrive at {{ station.city }}.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

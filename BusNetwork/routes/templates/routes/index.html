@@ -1,0 +1,159 @@
+{% extends "routes/layout.html" %}
+
+{% block title %}Available Routes — Bus Network{% endblock %}
+
+{% block body %}
+
+<div class="page-header">
+    <div class="page-header__content">
+        <p class="page-header__eyebrow">Live Network</p>
+        <h1 class="page-header__title">Available Routes</h1>
+        <p class="page-header__description">
+            Select your destination and book your seat in seconds.
+        </p>
+    </div>
+
+    {% if routes %}
+    <div class="flex items-center gap-3" style="flex-shrink:0;">
+        <div class="badge badge-success" style="padding:8px 14px; font-size:var(--text-sm);">
+            🟢 {{ routes|length }} route{{ routes|length|pluralize }} active
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if routes %}
+<div class="search-bar" style="max-width:440px; margin-bottom:var(--space-8);">
+    <span class="search-bar__icon" aria-hidden="true">🔍</span>
+    <input
+        type="text"
+        id="route-search"
+        class="search-bar__input"
+        placeholder="Search origin or destination…"
+        aria-label="Search routes"
+        oninput="filterRoutes(this.value)"
+    >
+</div>
+{% endif %}
+
+{% if stations %}
+<div style="margin-bottom: var(--space-8);">
+    <p style="font-size: var(--text-sm); font-weight: bold; color: var(--color-text-muted); margin-bottom: var(--space-3); text-transform: uppercase; letter-spacing: 1px;">
+        📍 Browse by Station
+    </p>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        {% for station in stations %}
+        <a href="{% url 'station_detail' station.id %}" 
+           class="badge badge-neutral" 
+           style="text-decoration: none; padding: 10px 18px; font-size: 15px; border: 1px solid var(--color-border); border-radius: 20px; transition: 0.2s;">
+            {{ station.city }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="route-grid" id="route-grid" role="list">
+
+    {% for route in routes %}
+    <div class="route-card-link"
+         role="listitem"
+         data-origin="{{ route.origin.city|lower }}"
+         data-destination="{{ route.destination.city|lower }}">
+
+        <a href="{% url 'route_detail' route.id %}"
+           aria-label="Route {{ route.id }}: {{ route.origin.city }} to {{ route.destination.city }}"
+           style="text-decoration:none; color:inherit; display:block;">
+
+            <div class="route-card">
+                <div class="route-card__stripe {% cycle 'route-card__stripe--accent' '' '' %}"></div>
+
+                <div class="route-card__content">
+
+                    <div class="route-card__number" aria-hidden="true">{{ route.id }}</div>
+
+                    <div class="route-card__route">
+
+                        <div class="route-card__stop">
+                            <div class="route-card__stop-label">From</div>
+                            <span onclick="window.location.href='{% url 'station_detail' route.origin.id %}'; event.preventDefault(); event.stopPropagation();"
+                                  class="route-card__stop-name station-link"
+                                  title="View {{ route.origin.city }} station"
+                                  style="cursor:pointer; color:var(--color-primary); position:relative; z-index:10;">
+                                {{ route.origin.city }}
+                            </span>
+                        </div>
+
+                        <span class="route-card__arrow" aria-hidden="true">→</span>
+
+                        <div class="route-card__stop">
+                            <div class="route-card__stop-label">To</div>
+                            <span onclick="window.location.href='{% url 'station_detail' route.destination.id %}'; event.preventDefault(); event.stopPropagation();"
+                                  class="route-card__stop-name station-link"
+                                  title="View {{ route.destination.city }} station"
+                                  style="cursor:pointer; color:var(--color-primary); position:relative; z-index:10;">
+                                {{ route.destination.city }}
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <div class="route-card__meta">
+                        <div class="route-card__stat">
+                            <div class="route-card__stat-label">Duration</div>
+                            <div class="route-card__stat-value">{{ route.duration }} min</div>
+                        </div>
+                        <div class="route-card__stat" style="margin-left:auto;">
+                            <span class="badge badge-success">Available</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </a>
+    </div>
+
+    {% empty %}
+    <div class="empty-state" style="grid-column:1/-1;" role="status">
+        <div class="empty-state__icon" aria-hidden="true">🚌</div>
+        <h3 class="empty-state__title">No routes available</h3>
+        <p class="empty-state__description">
+            There are currently no active routes. Please check back soon.
+        </p>
+    </div>
+    {% endfor %}
+
+</div>
+
+<div id="no-results"
+     class="empty-state"
+     style="display:none;"
+     role="status"
+     aria-live="polite">
+    <div class="empty-state__icon" aria-hidden="true">🔍</div>
+    <h3 class="empty-state__title">No matching routes</h3>
+    <p class="empty-state__description">Try a different origin or destination.</p>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function filterRoutes(query) {
+    const q      = query.trim().toLowerCase();
+    const cards  = document.querySelectorAll('.route-card-link');
+    const noRes  = document.getElementById('no-results');
+    let visible  = 0;
+
+    cards.forEach(card => {
+        const origin = card.dataset.origin      || '';
+        const dest   = card.dataset.destination || '';
+        const match  = !q || origin.includes(q) || dest.includes(q);
+        card.style.display = match ? '' : 'none';
+        if (match) visible++;
+    });
+
+    noRes.style.display = (visible === 0 && q) ? 'flex' : 'none';
+}
+</script>
+{% endblock %}
