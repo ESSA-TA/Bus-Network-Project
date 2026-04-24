@@ -14,7 +14,13 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['*']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-CSRF_TRUSTED_ORIGINS = ['https://bus-network-project-production.up.railway.app']
+CSRF_TRUSTED_ORIGINS = [
+    'http://bus-network-project-production.up.railway.app',
+    'https://bus-network-project-production.up.railway.app',
+    'https://*.up.railway.app',
+]
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 RENDER_HOST = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_HOST:
     ALLOWED_HOSTS.append(RENDER_HOST)
